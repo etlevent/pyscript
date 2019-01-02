@@ -225,7 +225,7 @@ print(arguments)
 _project = arguments['--project'] if not arguments['--project'] else arguments['--project'].split(',')
 print(_project)
 if arguments['--version']:
-    each_repos(lambda: call_set_versions(arguments['<version>'], arguments['<--branchName>']), project=_project)
+    each_repos(lambda: call_set_versions(arguments['--version'], arguments['--branch']), project=_project)
 elif arguments['--checkout']:
     each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_project)
 elif arguments['--update']:
