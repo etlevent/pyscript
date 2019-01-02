@@ -4,7 +4,7 @@ Usage:
     pygit.py --help
     pygit.py --clone [<rootDir>]
     pygit.py (--checkout | --update) <branchName>... [--project=<project>]
-    pygit.py -version=<version> [--project=<project>]
+    pygit.py --version=<version> [--branch=<branchName>] [--project=<project>]
     pygit.py --merge <from> <to> [--project=<project>]
     pygit.py --tag <tag_branch> <tagName> [--project=<project>]
     pygit.py <branchName>... [--project=<project>]
@@ -14,10 +14,11 @@ Options:
     --clone                                 clone remote repos
     --checkout                              checkout only.
     --update                                update branch and checkout back.
-    --version=<version>, -v version         update project version
+    --version=version, -v version         update project version
+    --branch=branchName, -b branchName    branch name. [default: develop]
     --merge                                 merge branch
     --tag                                   tag on branch and push
-    --project=<project>, -p project         specified projects, split with [,] if more than one project
+    --project=project, -p project         specified projects, split with [,] if more than one project
 """
 import os
 
@@ -134,10 +135,11 @@ def clone(project_name, dir_name=None, git_url=default_git_url) -> str:
     return execute_cmd(command)
 
 
-def call_set_versions(versions):
+def call_set_versions(versions, branch_name):
     """
     modify versions
     :param versions:
+    :param branch_name:
     :return:
     """
     set_versions = 'setVersions.{}'
@@ -154,7 +156,7 @@ def call_set_versions(versions):
         bat_set_versions) else 'sh ./%s' % sh_set_versions if is_windows else './%s' % sh_set_versions
     commands = [
         'git checkout .',
-        'git checkout develop',
+        'git checkout %s' % branch_name,
         'git pull',
         ' '.join([cmd_set_versions, versions]),
         'git commit -a -m \"update version [%s]\"' % versions,
@@ -209,7 +211,7 @@ def clone_repos(root_dir, git_url=default_git_url):
         project_list[index])
 
 
-def update_checkout(branch_list, project=None):
+def update_only(branch_list, project=None):
     def func():
         current = current_branch()
         [update(branch) for branch in branch_list]
@@ -223,11 +225,11 @@ print(arguments)
 _project = arguments['--project'] if not arguments['--project'] else arguments['--project'].split(',')
 print(_project)
 if arguments['--version']:
-    each_repos(lambda: call_set_versions(arguments['<version>']), project=_project)
+    each_repos(lambda: call_set_versions(arguments['<version>'], arguments['<--branchName>']), project=_project)
 elif arguments['--checkout']:
     each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_project)
 elif arguments['--update']:
-    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_project)
+    update_only(arguments['<branchName>'], project=_project)
 elif arguments['--clone']:
     clone_repos(arguments['<rootDir>'])
 elif arguments['--merge']:
@@ -235,4 +237,4 @@ elif arguments['--merge']:
 elif arguments['--tag']:
     each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']), project=_project)
 else:
-    update_checkout(arguments['<branchName>'], project=_project)
+    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_project)
