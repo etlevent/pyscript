@@ -1,27 +1,29 @@
 """
 
 Usage:
-    pygit.py (--checkout | --update) <branchName>...
-    pygit.py --version <versionName>
+    pygit.py --help
     pygit.py --clone [<rootDir>]
-    pygit.py --merge <from> <to>
-    pygit.py --tag <tag_branch> <tagName>
-    pygit.py <branchName>...
+    pygit.py (--checkout | --update) <branchName>... [--project=<project>]
+    pygit.py -version=<version> [--project=<project>]
+    pygit.py --merge <from> <to> [--project=<project>]
+    pygit.py --tag <tag_branch> <tagName> [--project=<project>]
+    pygit.py <branchName>... [--project=<project>]
 
 Options:
-    -h --help     help
-    --checkout    checkout only.
-    --update      update branch and checkout back.
-    --version     update project version
-    --clone       clone remote repos
-    --merge       merge branch
-    --tag         tag in branch and push
+    -h, --help                              help
+    --clone                                 clone remote repos
+    --checkout                              checkout only.
+    --update                                update branch and checkout back.
+    --version=<version>, -v version         update project version
+    --merge                                 merge branch
+    --tag                                   tag on branch and push
+    --project=<project>, -p project         specified projects, split with [,] if more than one project
 """
 import os
 
 from docopt import docopt
 
-default_git_url = 'git@git.homelabs.cn'
+default_git_url = 'git@git.homelabs.in'
 
 
 def execute_cmd(command) -> str:
@@ -161,11 +163,13 @@ def call_set_versions(versions):
     [print(execute_cmd(cmd)) for cmd in commands]
 
 
-def each_repos(func, root=os.getcwd()):
+def each_repos(func, project=None, root=os.getcwd()):
     if func is None:
         return
+    _projects = project if project else os.listdir(root)
+
     workspaces = filter(lambda w: os.path.isdir(w) and os.path.exists(os.path.join(w, '.git')),
-                        map(lambda f: os.path.join(root, f), os.listdir(root)))
+                        map(lambda f: os.path.join(root, f) if not os.path.isabs(f) else f, _projects))
     for workspace in workspaces:
         os.chdir(workspace)
         print('current workspace [%s]' % workspace)
@@ -205,28 +209,30 @@ def clone_repos(root_dir, git_url=default_git_url):
         project_list[index])
 
 
-def update_checkout(branch_list):
+def update_checkout(branch_list, project=None):
     def func():
         current = current_branch()
         [update(branch) for branch in branch_list]
         checkout_branch(current)
 
-    each_repos(func)
+    each_repos(func, project=project)
 
 
 arguments = docopt(__doc__)
 print(arguments)
+_project = arguments['--project'] if not arguments['--project'] else arguments['--project'].split(',')
+print(_project)
 if arguments['--version']:
-    each_repos(lambda: call_set_versions(arguments['<versionName>']))
+    each_repos(lambda: call_set_versions(arguments['<version>']), project=_project)
 elif arguments['--checkout']:
-    each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']])
+    each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_project)
 elif arguments['--update']:
-    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']])
+    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_project)
 elif arguments['--clone']:
     clone_repos(arguments['<rootDir>'])
 elif arguments['--merge']:
-    each_repos(lambda: merge(arguments['<from>'], arguments['<to>']))
+    each_repos(lambda: merge(arguments['<from>'], arguments['<to>']), project=_project)
 elif arguments['--tag']:
-    each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']))
+    each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']), project=_project)
 else:
-    update_checkout(arguments['<branchName>'])
+    update_checkout(arguments['<branchName>'], project=_project)
