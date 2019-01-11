@@ -78,5 +78,8 @@ else:
     device = devices[input_number(len(devices))]
 if device:
     path = input('Input Saved Path:')
-    adb_pull(device, r'sdcard/Android/data/cn.homelabs.algorithm.sample/files/Pictures/Samples',
-             r'E:\111\Samples\%s' % path)
+    while path != 'exit':
+        if path and len(path.strip()):
+            adb_pull(device, r'sdcard/Android/data/cn.homelabs.algorithm.sample/files/Pictures/Samples',
+                     r'E:\111\Samples\%s' % path.strip())
+        path = input('Input Saved Path:')

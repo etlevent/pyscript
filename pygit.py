@@ -2,23 +2,23 @@
 
 Usage:
     pygit.py --help
-    pygit.py --clone [<rootDir>]
-    pygit.py (--checkout | --update) <branchName>... [--project=<project>]
-    pygit.py --version=<version> [--branch=<branchName>] [--project=<project>]
-    pygit.py --merge <from> <to> [--project=<project>]
-    pygit.py --tag <tag_branch> <tagName> [--project=<project>]
+    pygit.py clone [<rootDir>]
+    pygit.py (checkout | update) <branchName>... [--project=<project>]
+    pygit.py setVersion --version=<version> [--branch=<branchName>] [--project=<project>]
+    pygit.py merge <from> <to> [--project=<project>]
+    pygit.py tag <tag_branch> <tagName> [--project=<project>]
     pygit.py <branchName>... [--project=<project>]
 
 Options:
     -h, --help                              help
-    --clone                                 clone remote repos
-    --checkout                              checkout only.
-    --update                                update branch and checkout back.
-    --version=version, -v version         update project version
-    --branch=branchName, -b branchName    branch name. [default: develop]
-    --merge                                 merge branch
-    --tag                                   tag on branch and push
-    --project=project, -p project         specified projects, split with [,] if more than one project
+    clone                                   clone remote repos
+    checkout                                checkout only.
+    update                                  update branch and checkout back.
+    merge                                   merge branch
+    tag                                     tag on branch and push
+    --version=version, -v version           update project version
+    --branch=branchName, -b branchName      branch name. [default: develop]
+    --project=project, -p project           specified projects, split with [,] if more than one project
 """
 import os
 
