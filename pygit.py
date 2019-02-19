@@ -224,17 +224,17 @@ arguments = docopt(__doc__)
 print(arguments)
 _project = arguments['--project'] if not arguments['--project'] else arguments['--project'].split(',')
 print(_project)
-if arguments['--version']:
+if arguments['setVersion']:
     each_repos(lambda: call_set_versions(arguments['--version'], arguments['--branch']), project=_project)
-elif arguments['--checkout']:
+elif arguments['checkout']:
     each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_project)
-elif arguments['--update']:
+elif arguments['update']:
     update_only(arguments['<branchName>'], project=_project)
-elif arguments['--clone']:
+elif arguments['clone']:
     clone_repos(arguments['<rootDir>'])
-elif arguments['--merge']:
+elif arguments['merge']:
     each_repos(lambda: merge(arguments['<from>'], arguments['<to>']), project=_project)
-elif arguments['--tag']:
+elif arguments['tag']:
     each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']), project=_project)
 else:
     each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_project)
