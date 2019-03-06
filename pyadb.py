@@ -20,6 +20,10 @@ class Device:
     def dev_id(self):
         return self.__dev_id
 
+    @property
+    def name(self):
+        return self.__name
+
 
 def execute_cmd(command) -> str:
     print(command)
@@ -32,7 +36,7 @@ def execute_adb(dev_id, cmd):
 
 
 def execute_adb_shell(dev_id, cmd):
-    cmd_adb_shell_dev = "adb -s {dev_id} shell '{cmd}'"
+    cmd_adb_shell_dev = "adb -s {dev_id} shell {cmd}"
     return execute_cmd(cmd_adb_shell_dev.format(dev_id=dev_id, cmd=cmd))
 
 
