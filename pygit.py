@@ -3,11 +3,11 @@
 Usage:
     pygit.py --help
     pygit.py clone [<rootDir>]
-    pygit.py (checkout | update) <branchName>... [--project=<project>]
-    pygit.py setVersion --version=<version> [--branch=<branchName>] [--project=<project>]
-    pygit.py merge <from> <to> [--project=<project>]
-    pygit.py tag <tag_branch> <tagName> [--project=<project>]
-    pygit.py <branchName>... [--project=<project>]
+    pygit.py (checkout | update) <branchName>... [--include=<include>] [--exclude=<exclude>]
+    pygit.py setVersion --version=<version> [--branch=<branchName>] [--include=<include>] [--exclude=<exclude>]
+    pygit.py merge <from> <to> [--include=<include>] [--exclude=<exclude>]
+    pygit.py tag <tag_branch> <tagName> [--include=<include>] [--exclude=<exclude>]
+    pygit.py <branchName>... [--include=<include>] [--exclude=<exclude>]
 
 Options:
     -h, --help                              help
@@ -18,7 +18,8 @@ Options:
     tag                                     tag on branch and push
     --version=version, -v version           update project version
     --branch=branchName, -b branchName      branch name. [default: develop]
-    --project=project, -p project           specified projects, split with [,] if more than one project
+    --include=include, -i include           include specified projects, split with [,] if more than one project
+    --exclude=exclude, -e exclude           exclude specified projects, split with [,] if more than one project
 """
 import os
 
@@ -222,19 +223,27 @@ def update_only(branch_list, project=None):
 
 arguments = docopt(__doc__)
 print(arguments)
-_project = arguments['--project'] if not arguments['--project'] else arguments['--project'].split(',')
-print(_project)
+_include = arguments['--include'] if not arguments['--include'] else arguments['--include'].split(',')
+_exclude = arguments['--exclude'] if not arguments['--exclude'] else arguments['--exclude'].split(',')
+print(_include, _exclude)
+if _include and len(_include):
+    _projects = _include
+else:
+    _projects = os.listdir(os.getcwd())
+    _projects = filter(lambda f: f not in _exclude, _projects)
+print('projects=', _projects)
+
 if arguments['setVersion']:
-    each_repos(lambda: call_set_versions(arguments['--version'], arguments['--branch']), project=_project)
+    each_repos(lambda: call_set_versions(arguments['--version'], arguments['--branch']), project=_projects)
 elif arguments['checkout']:
-    each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_project)
+    each_repos(lambda: [print(checkout_branch(branch)) for branch in arguments['<branchName>']], project=_projects)
 elif arguments['update']:
-    update_only(arguments['<branchName>'], project=_project)
+    update_only(arguments['<branchName>'], project=_projects)
 elif arguments['clone']:
     clone_repos(arguments['<rootDir>'])
 elif arguments['merge']:
-    each_repos(lambda: merge(arguments['<from>'], arguments['<to>']), project=_project)
+    each_repos(lambda: merge(arguments['<from>'], arguments['<to>']), project=_projects)
 elif arguments['tag']:
-    each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']), project=_project)
+    each_repos(lambda: tag_branch(arguments['<tag_branch>'], arguments['<tagName>']), project=_projects)
 else:
-    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_project)
+    each_repos(lambda: [update(branch) for branch in arguments['<branchName>']], project=_projects)
