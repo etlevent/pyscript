@@ -230,7 +230,8 @@ if _include and len(_include):
     _projects = _include
 else:
     _projects = os.listdir(os.getcwd())
-    _projects = filter(lambda f: f not in _exclude, _projects)
+    if _exclude:
+        _projects = filter(lambda f: f not in _exclude, _projects)
 print('projects=', _projects)
 
 if arguments['setVersion']:
